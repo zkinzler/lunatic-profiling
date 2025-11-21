@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { analyzeLunacyProfile } from '@/lib/llm';
 import { normalizeScores } from '@/lib/normalize';
 import { ResultSchema } from '@/schemas/result';
+import { getQuestionsByIds, Question, Answer } from '@/lib/questions';
 
 export async function POST(request: NextRequest) {
   try {
@@ -130,12 +131,11 @@ function calculateRawScores(
 ): Record<string, number> {
   const scores: Record<string, number> = {};
 
-  // Import questions dynamically
-  const { getQuestionsByIds } = require('@/lib/questions');
+  // Get questions from the question bank
   const questions = getQuestionsByIds(questionIds);
 
   // Create a map of question ID to question object
-  const questionMap = new Map(questions.map((q: { id: string }) => [q.id, q]));
+  const questionMap = new Map<string, Question>(questions.map((q: Question) => [q.id, q]));
 
   Object.entries(answers).forEach(([questionId, selectedAnswers]) => {
     const question = questionMap.get(questionId);
@@ -153,7 +153,7 @@ function calculateRawScores(
     }
 
     answersArray.forEach((answerId, rank) => {
-      const answer = (question as any).answers?.find((a: any) => a.id === answerId);
+      const answer = question.answers.find((a: Answer) => a.id === answerId);
       if (answer && answer.weight) {
         const rankMultiplier = rank === 0 ? 1.0 : rank === 1 ? 0.7 : 0.4;
         Object.entries(answer.weight).forEach(([trait, weight]) => {

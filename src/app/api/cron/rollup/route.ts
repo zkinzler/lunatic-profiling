@@ -32,6 +32,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Group by model and provider
+    interface GroupedUsage {
+      model: string;
+      provider: string;
+      calls: number;
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+      inputCostUsd: number;
+      outputCostUsd: number;
+      totalCostUsd: number;
+    }
+
     const groups = events.reduce((acc, event) => {
       const key = `${event.model}:${event.provider}`;
       if (!acc[key]) {
@@ -57,7 +69,7 @@ export async function POST(request: NextRequest) {
       acc[key].totalCostUsd += Number(event.totalCostUsd);
 
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, GroupedUsage>);
 
     // Upsert daily cost records
     let summarized = 0;
