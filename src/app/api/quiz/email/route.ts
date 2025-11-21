@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (session.result.emailed) {
+      console.log('⚠️  Email already sent for this session');
       return NextResponse.json(
         { error: 'Email already sent for this session' },
         { status: 400 }
@@ -54,7 +55,8 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Send actual email via Resend
-      await resend.emails.send({
+      console.log(`📧 Attempting to send email via Resend to: ${recipientEmail}`);
+      const emailResult = await resend.emails.send({
         from: emailFrom,
         to: [recipientEmail],
         subject: 'Your Lunatic Profiling Results',
@@ -64,6 +66,8 @@ export async function POST(request: NextRequest) {
           shareUrl,
         }),
       });
+
+      console.log(`✅ Resend API response:`, emailResult);
 
       if (process.env.RESULTS_DEV_RECIPIENT) {
         console.log(`🔄 DEV OVERRIDE: Email for ${session.email} sent to ${recipientEmail} instead`);

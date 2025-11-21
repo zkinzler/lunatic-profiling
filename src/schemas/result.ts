@@ -16,11 +16,16 @@ import { z } from 'zod';
     percentage: z.number().min(0).max(100),
   });
 
+  export const OverlapSchema = z.object({
+    archetypes: z.array(z.string()),
+    similarity: z.number(),
+  });
+
   export const ResultSchema = z.object({
     scores: z.record(z.string(), z.number()),
-    percentages: z.record(ArchetypeEnum, z.number().min(0).max(100)),
+    percentages: z.record(z.string(), z.number().min(0).max(100)),
     topArchetypes: z.array(ArchetypeSchema).min(1).max(3),
-    overlaps: z.array(z.string()).default([]),
+    overlaps: z.array(OverlapSchema).default([]),
     asciiChart: z.string(),
     summary: z.string(),
     rawModelJson: z.record(z.string(), z.unknown()).optional(),

@@ -39,7 +39,11 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Session answers:', JSON.stringify(session.answers, null, 2));
-    const rawScores = calculateRawScores(session.answers as Record<string, string[]>);
+
+    // Parse question IDs from session
+    const questionIds = session.questionIds ? JSON.parse(session.questionIds) : [];
+
+    const rawScores = calculateRawScores(session.answers as Record<string, string[]>, questionIds);
     const normalizedScores = normalizeScores(rawScores);
     const percentages = calculatePercentages(normalizedScores);
     const topArchetypes = getTopArchetypes(percentages);
@@ -120,78 +124,25 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function calculateRawScores(answers: Record<string, string[]>): Record<string, number> {
+function calculateRawScores(
+  answers: Record<string, string[]>,
+  questionIds: string[]
+): Record<string, number> {
   const scores: Record<string, number> = {};
 
-  const weightMap = {
-    1: {
-      'a': { 'Cosmic Jester': 3, 'Flow Shaman': 2 },
-      'b': { 'Quantum Magician': 2, 'Dream Alchemist': 2 },
-      'c': { 'Reality Hacker': 3, 'Shadow Sage': 2 },
-      'd': { 'Sacred Rebel': 3, 'Flow Shaman': 1 },
-      'e': { 'Shadow Sage': 2, 'Quantum Magician': 2 },
-      'f': { 'Cosmic Jester': 2, 'Chaos Pilot': 3 }
-    },
-    2: {
-      'a': { 'Reality Hacker': 3, 'Shadow Sage': 2 },
-      'b': { 'Dream Alchemist': 3, 'Quantum Magician': 2 },
-      'c': { 'Flow Shaman': 2, 'Sacred Rebel': 2 },
-      'd': { 'Sacred Rebel': 3, 'Flow Shaman': 2 },
-      'e': { 'Chaos Pilot': 3, 'Cosmic Jester': 2 },
-      'f': { 'Shadow Sage': 2, 'Reality Hacker': 2 }
-    },
-    3: {
-      'a': { 'Chaos Pilot': 2, 'Cosmic Jester': 2 },
-      'b': { 'Shadow Sage': 3, 'Dream Alchemist': 2 },
-      'c': { 'Flow Shaman': 3, 'Sacred Rebel': 2 },
-      'd': { 'Dream Alchemist': 2, 'Quantum Magician': 2 },
-      'e': { 'Cosmic Jester': 3, 'Chaos Pilot': 2 },
-      'f': { 'Sacred Rebel': 3, 'Flow Shaman': 2 }
-    },
-    4: {
-      'a': { 'Sacred Rebel': 3, 'Flow Shaman': 2 },
-      'b': { 'Dream Alchemist': 3, 'Quantum Magician': 2 },
-      'c': { 'Reality Hacker': 3, 'Shadow Sage': 2 },
-      'd': { 'Flow Shaman': 3, 'Sacred Rebel': 2 },
-      'e': { 'Quantum Magician': 2, 'Reality Hacker': 2 },
-      'f': { 'Shadow Sage': 3, 'Reality Hacker': 2 }
-    },
-    5: {
-      'a': { 'Reality Hacker': 3, 'Shadow Sage': 2 },
-      'b': { 'Chaos Pilot': 2, 'Cosmic Jester': 3 },
-      'c': { 'Flow Shaman': 2, 'Sacred Rebel': 2 },
-      'd': { 'Shadow Sage': 3, 'Dream Alchemist': 2 },
-      'e': { 'Dream Alchemist': 2, 'Quantum Magician': 3 },
-      'f': { 'Sacred Rebel': 3, 'Flow Shaman': 2 }
-    },
-    6: {
-      'a': { 'Reality Hacker': 3, 'Quantum Magician': 2 },
-      'b': { 'Flow Shaman': 3, 'Sacred Rebel': 2 },
-      'c': { 'Shadow Sage': 2, 'Dream Alchemist': 2 },
-      'd': { 'Chaos Pilot': 3, 'Cosmic Jester': 2 },
-      'e': { 'Reality Hacker': 3, 'Quantum Magician': 2 },
-      'f': { 'Flow Shaman': 3, 'Sacred Rebel': 2 }
-    },
-    7: {
-      'a': { 'Shadow Sage': 2, 'Dream Alchemist': 3 },
-      'b': { 'Cosmic Jester': 3, 'Chaos Pilot': 2 },
-      'c': { 'Chaos Pilot': 2, 'Flow Shaman': 2 },
-      'd': { 'Reality Hacker': 2, 'Quantum Magician': 3 },
-      'e': { 'Sacred Rebel': 2, 'Flow Shaman': 2 },
-      'f': { 'Dream Alchemist': 2, 'Shadow Sage': 2 }
-    },
-    8: {
-      'a': { 'Cosmic Jester': 2, 'Chaos Pilot': 3 },
-      'b': { 'Quantum Magician': 3, 'Reality Hacker': 2 },
-      'c': { 'Sacred Rebel': 3, 'Flow Shaman': 2 },
-      'd': { 'Dream Alchemist': 3, 'Shadow Sage': 2 },
-      'e': { 'Reality Hacker': 3, 'Quantum Magician': 2 },
-      'f': { 'Chaos Pilot': 3, 'Cosmic Jester': 2 }
-    }
-  };
+  // Import questions dynamically
+  const { getQuestionsByIds } = require('@/lib/questions');
+  const questions = getQuestionsByIds(questionIds);
+
+  // Create a map of question ID to question object
+  const questionMap = new Map(questions.map((q: { id: string }) => [q.id, q]));
 
   Object.entries(answers).forEach(([questionId, selectedAnswers]) => {
-    const qId = parseInt(questionId);
+    const question = questionMap.get(questionId);
+    if (!question) {
+      console.warn(`Question ${questionId} not found in question bank`);
+      return;
+    }
 
     // Ensure selectedAnswers is an array
     let answersArray: string[];
@@ -202,11 +153,11 @@ function calculateRawScores(answers: Record<string, string[]>): Record<string, n
     }
 
     answersArray.forEach((answerId, rank) => {
-      const weights = weightMap[qId as keyof typeof weightMap]?.[answerId as keyof typeof weightMap[1]];
-      if (weights) {
+      const answer = (question as any).answers?.find((a: any) => a.id === answerId);
+      if (answer && answer.weight) {
         const rankMultiplier = rank === 0 ? 1.0 : rank === 1 ? 0.7 : 0.4;
-        Object.entries(weights).forEach(([trait, weight]) => {
-          scores[trait] = (scores[trait] || 0) + (weight * rankMultiplier);
+        Object.entries(answer.weight).forEach(([trait, weight]) => {
+          scores[trait] = (scores[trait] || 0) + ((weight as number) * rankMultiplier);
         });
       }
     });
