@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "stress": "node scripts/stress.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate && prisma db push"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
