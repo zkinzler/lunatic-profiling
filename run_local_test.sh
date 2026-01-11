@@ -291,7 +291,6 @@ fi
 echo "⚙️  Configuring .env.local..."
 touch .env.local
 
-append_if_missing .env.local 'LLM_PROVIDER="mock"'
 append_if_missing .env.local 'ADMIN_DASHBOARD_TOKEN="dev-token"'
 append_if_missing .env.local 'BILLING_MODEL="gpt-4o-mini"'
 append_if_missing .env.local 'BILLING_INPUT_PER_1K="0.005"'
@@ -331,7 +330,7 @@ else
 fi
 
 # Run stress test
-echo "🏋️  Running stress test (LLM_PROVIDER=mock)..."
+echo "🏋️  Running stress test (mock mode - no OPENAI_API_KEY)..."
 if pnpm run stress; then
     echo "✅ Stress test completed successfully"
 else

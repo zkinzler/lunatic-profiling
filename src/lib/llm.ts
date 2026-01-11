@@ -18,21 +18,21 @@ interface AnalysisResult {
 export async function analyzeLunacyProfile(
   input: AnalysisInput
 ): Promise<AnalysisResult> {
-  const provider = process.env.LLM_PROVIDER || 'mock';
-
-  if (provider === 'anthropic') {
-    return analyzeWithAnthropic(input);
-  } else if (provider === 'openai') {
-    return analyzeWithOpenAI(input);
-  } else {
-    // Use mock for testing since OpenAI isn't following the schema
-    return analyzeWithAnthropic(input);
-  }
+  return analyzeWithOpenAI(input);
 }
 
 async function analyzeWithOpenAI(input: AnalysisInput): Promise<AnalysisResult> {
+  // If no API key, use mock fallback (useful for testing)
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OpenAI API key not configured');
+    console.warn('No OPENAI_API_KEY configured, using mock analysis');
+    return {
+      summary: generateMockSummary(input.topArchetypes),
+      raw: {
+        summary: generateMockSummary(input.topArchetypes),
+        insights: input.topArchetypes,
+        recommendations: generateMockRecommendations(input.topArchetypes),
+      },
+    };
   }
 
   const openai = new OpenAI({
@@ -116,23 +116,6 @@ async function analyzeWithOpenAI(input: AnalysisInput): Promise<AnalysisResult> 
       raw: mockAnalysis,
     };
   }
-}
-
-async function analyzeWithAnthropic(
-  input: AnalysisInput
-): Promise<AnalysisResult> {
-  // Note: Anthropic implementation would go here
-  // For now, fallback to mock
-  const mockAnalysis = {
-    summary: generateMockSummary(input.topArchetypes),
-    insights: input.topArchetypes,
-    recommendations: generateMockRecommendations(input.topArchetypes),
-  };
-
-  return {
-    summary: mockAnalysis.summary,
-    raw: mockAnalysis,
-  };
 }
 
 function getSystemPrompt(): string {

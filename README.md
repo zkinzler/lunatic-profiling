@@ -5,7 +5,7 @@ A modern psychological archetype assessment platform that uses AI-powered analys
 ## Features
 
 - **Interactive Assessment**: 8 carefully crafted questions with ranked response options
-- **AI-Powered Analysis**: Advanced psychological profiling using OpenAI or Anthropic models
+- **AI-Powered Analysis**: Advanced psychological profiling using OpenAI GPT models
 - **Beautiful Results**: Visual archetype breakdowns with ASCII art personality maps
 - **Email Integration**: Automated result delivery via Resend
 - **Shareable Profiles**: Public links for sharing results with others
@@ -32,8 +32,7 @@ A modern psychological archetype assessment platform that uses AI-powered analys
    ```
    Edit `.env.local` with your API keys:
    - `RESEND_API_KEY`: Get from [Resend](https://resend.com)
-   - `OPENAI_API_KEY`: Get from [OpenAI](https://openai.com) (if using OpenAI)
-   - `ANTHROPIC_API_KEY`: Get from [Anthropic](https://anthropic.com) (if using Anthropic)
+   - `OPENAI_API_KEY`: Get from [OpenAI](https://openai.com)
 
 3. **Database setup**:
    ```bash
@@ -111,11 +110,6 @@ src/
 - `summary`: AI-generated analysis
 
 ## Configuration
-
-### LLM Provider
-Set `LLM_PROVIDER` in your environment:
-- `OPENAI`: Uses OpenAI GPT models
-- `ANTHROPIC`: Uses Anthropic Claude models
 
 ### Email Provider
 Configure Resend in your environment:
