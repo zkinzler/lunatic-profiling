@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getRandomQuestions } from '@/lib/questions';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,14 +9,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Select 8 random questions
-    const selectedQuestions = getRandomQuestions(8);
-    const questionIds = selectedQuestions.map(q => q.id);
-
+    // Create session - questions are now fixed (24 questions in order)
+    // No need to store questionIds since they're always the same
     const session = await prisma.quizSession.create({
       data: {
         email,
-        questionIds: JSON.stringify(questionIds),
+        currentPhase: 1, // Start at phase 1
       },
     });
 

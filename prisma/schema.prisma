@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -60,15 +60,15 @@ model VerificationToken {
 }
 
 model QuizSession {
-  id        String   @id @default(cuid())
-  publicId  String   @unique @default(cuid())
-  userId    String?
-  email     String?
-  answers   Json?
-  questionIds String? // Stored as JSON string of question IDs
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  publicId     String   @unique @default(cuid())
+  userId       String?
+  email        String?
+  answers      Json?    // Record<questionId, answerId[]>
+  currentPhase Int      @default(1) // Track which phase user is in (1, 2, or 3)
+  completed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   result Result?
@@ -78,23 +78,85 @@ model QuizSession {
 }
 
 model Result {
-  id             String   @id @default(cuid())
-  sessionId      String   @unique
-  scores         Json
-  percentages    Json
-  topArchetypes  Json
-  overlaps       Json?
+  id        String @id @default(cuid())
+  sessionId String @unique
+
+  // Primary archetype
+  primaryArchetypeCode       String  // VN, CTD, YO, SO, DL, MM, TMZ, CS, BN
+  primaryArchetypeName       String  // Full name
+  primaryArchetypePubLegend  String  // Pub legend name
+  primaryArchetypeScore      Float
+  primaryArchetypePercentage Float
+
+  // Secondary archetype
+  secondaryArchetypeCode       String?
+  secondaryArchetypeName       String?
+  secondaryArchetypePubLegend  String?
+  secondaryArchetypeScore      Float?
+  secondaryArchetypePercentage Float?
+
+  // Hybrid profile
+  isHybrid             Boolean @default(false)
+  hybridName           String?
+  hybridDescription    String?
+  hybridPercentageDiff Float?
+
+  // All archetype scores as JSON
+  allArchetypeScores      Json // Record<ArchetypeCode, number>
+  allArchetypePercentages Json // Record<ArchetypeCode, number>
+
+  // Trait scores (stored individually for easy querying)
+  traitBST Float @default(0) // Bullshit Tolerance
+  traitCPR Float @default(0) // Chaos Precision
+  traitAE  Float @default(0) // Apology Efficiency
+  traitBS  Float @default(0) // British Stoicism
+
+  // Trait percentages
+  traitBSTPercentage Float @default(0)
+  traitCPRPercentage Float @default(0)
+  traitAEPercentage  Float @default(0)
+  traitBSPercentage  Float @default(0)
+
+  // Theme scores for specialization
+  themeScores    Json?   // Record<string, number>
+  specialization String? // Dominant theme name
+
+  // Blueprint narrative sections
+  coreDriver       String?
+  superpower       String?
+  kryptonite       String?
+  repressedShadow  String?
+  internalConflict String?
+  finalForm        String?
+  signatureMove    String?
+  chaosPartner     String?
+
+  // Computed stats
+  britishnessQuotient        Float?
+  britishnessInterpretation  String?
+  resistanceClearanceLevel   String? // Probationary Lunatic, Operative Grade II, etc.
+  resistanceClearancePoints  Int     @default(0)
+  chaosPattern               String? // front_loaded, escalating, ping_pong, contained, adaptive
+  chaosPatternDescription    String?
+
+  // Visual and summary
   asciiChart     String?
   summary        String?
+  shareableStat  String?
   rawModelJson   Json?
-  emailed        Boolean  @default(false)
-  emailedAt      DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+
+  // Email tracking
+  emailed   Boolean   @default(false)
+  emailedAt DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   session QuizSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+  @@index([primaryArchetypeCode])
 }
 
 model UsageEvent {

@@ -42,13 +42,28 @@ export async function POST(request: NextRequest) {
     const recipientEmail = process.env.RESULTS_DEV_RECIPIENT || session.email;
     const emailFrom = process.env.EMAIL_FROM || 'Lunatic Profiling <no-reply@lunacy.local>';
 
+    const emailProps = {
+      primaryArchetypeName: session.result.primaryArchetypeName,
+      primaryArchetypePubLegend: session.result.primaryArchetypePubLegend,
+      primaryArchetypePercentage: session.result.primaryArchetypePercentage,
+      secondaryArchetypeName: session.result.secondaryArchetypeName || undefined,
+      secondaryArchetypePubLegend: session.result.secondaryArchetypePubLegend || undefined,
+      secondaryArchetypePercentage: session.result.secondaryArchetypePercentage || undefined,
+      isHybrid: session.result.isHybrid,
+      summary: session.result.summary || '',
+      shareUrl,
+    };
+
     if (!resend) {
       // No Resend API key configured - log and simulate success in dev
       console.log('📧 EMAIL SIMULATION (no RESEND_API_KEY configured):');
       console.log(`   To: ${recipientEmail}`);
-      console.log(`   Subject: Your Lunatic Profiling Results`);
+      console.log(`   Subject: Your Lunacy Blueprint Results`);
       console.log(`   Share URL: ${shareUrl}`);
-      console.log(`   Top Archetypes: ${JSON.stringify(session.result.topArchetypes, null, 2)}`);
+      console.log(`   Primary: ${emailProps.primaryArchetypePubLegend} (${emailProps.primaryArchetypeName})`);
+      if (emailProps.isHybrid) {
+        console.log(`   Secondary: ${emailProps.secondaryArchetypePubLegend} (${emailProps.secondaryArchetypeName})`);
+      }
 
       if (process.env.RESULTS_DEV_RECIPIENT) {
         console.log(`   🔄 DEV OVERRIDE: Original email (${session.email}) redirected to ${recipientEmail}`);
@@ -59,12 +74,8 @@ export async function POST(request: NextRequest) {
       const emailResult = await resend.emails.send({
         from: emailFrom,
         to: [recipientEmail],
-        subject: 'Your Lunatic Profiling Results',
-        react: ResultEmail({
-          topArchetypes: session.result.topArchetypes as Array<{ name: string; percentage: number }>,
-          summary: session.result.summary || '',
-          shareUrl,
-        }),
+        subject: 'Your Lunacy Blueprint Results',
+        react: ResultEmail(emailProps),
       });
 
       console.log(`✅ Resend API response:`, emailResult);

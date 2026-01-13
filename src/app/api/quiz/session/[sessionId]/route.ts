@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getQuestionsByIds } from '@/lib/questions';
+import { QUIZ_QUESTIONS } from '@/lib/questions';
 
 export async function GET(
     request: NextRequest,
@@ -20,17 +20,13 @@ export async function GET(
             );
         }
 
-        if (!session.questionIds) {
-            return NextResponse.json(
-                { error: 'No questions assigned to this session' },
-                { status: 400 }
-            );
-        }
-
-        const questionIds = JSON.parse(session.questionIds);
-        const questions = getQuestionsByIds(questionIds);
-
-        return NextResponse.json({ questions });
+        // Return fixed questions (all 24 in order) with current phase
+        return NextResponse.json({
+            questions: QUIZ_QUESTIONS,
+            currentPhase: session.currentPhase,
+            answers: session.answers || {},
+            completed: session.completed,
+        });
     } catch (error) {
         console.error('Error fetching session questions:', error);
         return NextResponse.json(

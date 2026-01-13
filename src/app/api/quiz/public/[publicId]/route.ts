@@ -13,10 +13,42 @@ export async function GET(
       include: {
         result: {
           select: {
-            topArchetypes: true,
-            overlaps: true,
+            // Primary archetype
+            primaryArchetypeCode: true,
+            primaryArchetypeName: true,
+            primaryArchetypePubLegend: true,
+            primaryArchetypePercentage: true,
+            // Secondary archetype
+            secondaryArchetypeCode: true,
+            secondaryArchetypeName: true,
+            secondaryArchetypePubLegend: true,
+            secondaryArchetypePercentage: true,
+            // Hybrid
+            isHybrid: true,
+            hybridName: true,
+            hybridDescription: true,
+            hybridPercentageDiff: true,
+            // Trait percentages
+            traitBSTPercentage: true,
+            traitCPRPercentage: true,
+            traitAEPercentage: true,
+            traitBSPercentage: true,
+            // Blueprint sections
+            coreDriver: true,
+            superpower: true,
+            kryptonite: true,
+            signatureMove: true,
+            chaosPartner: true,
+            // Stats
+            britishnessQuotient: true,
+            britishnessInterpretation: true,
+            resistanceClearanceLevel: true,
+            chaosPattern: true,
+            chaosPatternDescription: true,
+            // Visual
             asciiChart: true,
             summary: true,
+            shareableStat: true,
           },
         },
       },

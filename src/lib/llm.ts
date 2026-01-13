@@ -193,35 +193,39 @@ function generateMockSummary(
   const primary = topArchetypes[0];
   const secondary = topArchetypes[1];
 
+  // V2 archetype summaries using new codes/names
   const summaries: Record<string, string> = {
-    'Quantum Magician':
-      'You are a master of possibility and transformation, weaving reality through consciousness and intention. Your mind operates on multiple dimensions simultaneously, seeing potential where others see limitation.',
-    'Cosmic Jester':
-      'You embody divine comedy and sacred playfulness, using humor and paradox as pathways to truth. Your jester energy breaks down barriers and reveals the absurdity that makes life meaningful.',
-    'Reality Hacker':
-      'You are a master of systems and patterns, capable of seeing through illusions to the underlying code of existence. Your analytical prowess serves your revolutionary spirit.',
-    'Dream Alchemist':
-      'You transform the raw material of imagination into tangible reality, bridging the unconscious and conscious realms. Your visionary nature channels collective dreams into manifestation.',
-    'Chaos Pilot':
-      'You thrive in the eye of the storm, navigating uncertainty with grace and turning disorder into opportunity. Your adventurous spirit embraces the unknown as fertile ground for growth.',
-    'Shadow Sage':
-      'You are a guardian of hidden wisdom and uncomfortable truths, helping others integrate their darkness to become whole. Your depth perception reveals what others prefer to ignore.',
-    'Sacred Rebel':
-      'You challenge systems and structures in service of higher truth and authentic freedom. Your rebellious nature is fueled by love and a vision of what could be.',
-    'Flow Shaman':
-      'You are a conduit for natural rhythms and healing energies, helping others find their authentic flow state. Your presence brings balance and restoration to chaotic environments.',
+    'VN': 'You are a Velvet Nightmare (Bullshit Slayer) - a surgical truth-teller who dismantles nonsense with precision and style. Your intolerance for bullshit is both a superpower and a lifestyle.',
+    'CTD': 'You are a Chaos Tea Dealer (Chaos Architect) - a pattern-obsessed planner who finds order in chaos. You see the matrix while others see static.',
+    'YO': 'You are a YOLO Ohno (Vibe Commando) - consequences are a problem for future you. Your adventurous spirit embraces chaos as fertile ground for growth.',
+    'SO': 'You are a Spreadsheet Overlord (Efficiency Berserker) - emotions have pivot tables, feelings require data validation. Your analytical prowess turns chaos into color-coded clarity.',
+    'DL': 'You are a Dalai Lemma (Apology Ninja) - sorry for existing, sorry for apologizing, sorry for that apology. Your diplomatic mastery smooths every rough edge.',
+    'MM': 'You are a Manifestor of Mystery (Mystery Curator) - an aesthetic chaos artist who turns confusion into art. Your vibe is immaculate even when nothing makes sense.',
+    'TMZ': 'You are a Tea Master of Zen (Zen Bastard) - calm rage, formatted perfectly. You maintain composure with tea-fueled stoicism even as the world burns around you.',
+    'CS': 'You are a Chaos Slayer (Problem Annihilator) - a surgical problem destroyer who eliminates issues with terrifying efficiency. Where there was chaos, you leave only solutions.',
+    'BN': 'You are a Baffled Normie (Sensible Weapon) - tragically sane in a world that expects madness. Your reasonable perspective is your greatest superpower.',
+    // Fallbacks for full names
+    'Velvet Nightmare': 'You are a Velvet Nightmare (Bullshit Slayer) - a surgical truth-teller who dismantles nonsense with precision.',
+    'Chaos Tea Dealer': 'You are a Chaos Tea Dealer (Chaos Architect) - a pattern-obsessed planner who finds order in chaos.',
+    'YOLO Ohno': 'You are a YOLO Ohno (Vibe Commando) - consequences are a problem for future you.',
+    'Spreadsheet Overlord': 'You are a Spreadsheet Overlord (Efficiency Berserker) - emotions have pivot tables.',
+    'Dalai Lemma': 'You are a Dalai Lemma (Apology Ninja) - sorry for existing, sorry for apologizing.',
+    'Manifestor of Mystery': 'You are a Manifestor of Mystery (Mystery Curator) - an aesthetic chaos artist.',
+    'Tea Master of Zen': 'You are a Tea Master of Zen (Zen Bastard) - calm rage, formatted perfectly.',
+    'Chaos Slayer': 'You are a Chaos Slayer (Problem Annihilator) - a surgical problem destroyer.',
+    'Baffled Normie': 'You are a Baffled Normie (Sensible Weapon) - tragically sane.',
   };
 
-  let summary = summaries[primary.name] || 'You have a unique psychological profile that defies simple categorization.';
+  let summary = summaries[primary.name] || 'You have a unique chaos profile that defies simple categorization. The universe is still processing your application.';
 
-  if (secondary && secondary.percentage > 60) {
+  if (secondary && secondary.percentage > 15) {
     const secondaryText = summaries[secondary.name];
     if (secondaryText) {
-      summary += ` Combined with your ${secondary.name} tendencies, you demonstrate a well-rounded approach to life that balances multiple perspectives.`;
+      summary += ` Your secondary ${secondary.name} tendencies add another layer of beautiful dysfunction to your chaos portfolio.`;
     }
   }
 
-  summary += ` Your strongest trait (${primary.name}) represents ${primary.percentage}% of your profile, indicating a clear pattern in how you process information and interact with the world.`;
+  summary += ` Your strongest archetype represents ${primary.percentage}% of your profile - a clear pattern in how you process chaos and interact with the world.`;
 
   return summary;
 }
@@ -229,53 +233,59 @@ function generateMockSummary(
 function generateMockRecommendations(
   topArchetypes: Array<{ name: string; percentage: number }>
 ): string[] {
+  // V2 archetype recommendations
   const recommendations: Record<string, string[]> = {
-    'Quantum Magician': [
-      'Practice energy work and manifestation techniques to channel your natural abilities',
-      'Study quantum physics and consciousness research to understand your perspective',
-      'Create magical rituals that help you focus your transformative powers',
+    'VN': [
+      'Channel your bullshit detection into constructive feedback',
+      'Remember: not everyone is ready for the truth. Some need a gentler guillotine.',
+      'Your kryptonite is being wrong. Practice saying "I might be mistaken" without imploding.',
     ],
-    'Cosmic Jester': [
-      'Express your humor through creative outlets like comedy, art, or writing',
-      'Use playfulness to break tension and bring levity to serious situations',
-      'Balance your jester energy with moments of deep contemplation',
+    'CTD': [
+      'Embrace the chaos you cannot control - it makes your organized chaos more impressive',
+      'Share your pattern-recognition with others (slowly, they process differently)',
+      'Your spreadsheets for spreadsheets might need a spreadsheet. That is fine.',
     ],
-    'Reality Hacker': [
-      'Apply your analytical skills to systems that need revolutionary change',
-      'Study both technology and metaphysics to expand your hacking toolkit',
-      'Share your insights to help others see through illusions',
+    'YO': [
+      'Future You will deal with consequences. That is their problem.',
+      'Your impulsiveness is a feature, not a bug - channel it wisely',
+      'Sometimes the best plan is no plan. You already knew this.',
     ],
-    'Dream Alchemist': [
-      'Keep a dream journal to capture and work with unconscious material',
-      'Practice visualization and creative manifestation techniques',
-      'Create art or write to give form to your visions',
+    'SO': [
+      'Not everything needs a pivot table. Some things need feelings. (Just kidding, make the table.)',
+      'Teach others your systems - they need structure even if they do not know it',
+      'Your efficiency is terrifying. Use this power for good.',
     ],
-    'Chaos Pilot': [
-      'Seek adventures and challenges that push your comfort zone',
-      'Practice mindfulness to stay centered during chaotic times',
-      'Help others navigate uncertainty with your calm presence',
+    'DL': [
+      'You can stop apologizing for apologizing now. (Sorry if that was presumptuous.)',
+      'Your diplomatic skills are valuable - charge more for emotional labor',
+      'Practice setting boundaries without sorry as every other word.',
     ],
-    'Shadow Sage': [
-      'Explore your own shadow through therapy, journaling, or meditation',
-      'Study psychology and spiritual traditions to deepen your wisdom',
-      'Create safe spaces for others to explore their hidden aspects',
+    'MM': [
+      'Your aesthetic chaos is art. Document it, even when it makes no sense.',
+      'Not everything needs meaning - sometimes vibes are enough',
+      'Your mystery is a gift. Do not explain yourself to people who do not deserve the lore.',
     ],
-    'Sacred Rebel': [
-      'Channel your rebellious energy toward meaningful social change',
-      'Study the history of successful revolutionaries and movements',
-      'Build communities of like-minded change-makers',
+    'TMZ': [
+      'Your calm rage is an art form. Keep sipping tea while the world burns.',
+      'Share your stoicism techniques - others need your composure',
+      'It is okay to occasionally let the mask slip. Controlled releases prevent explosions.',
     ],
-    'Flow Shaman': [
-      'Spend time in nature to restore and strengthen your connection',
-      'Practice healing modalities like energy work, herbalism, or bodywork',
-      'Create rhythmic practices like drumming, dancing, or chanting',
+    'CS': [
+      'Not every problem needs slaying. Some need gentle prodding.',
+      'Your efficiency is admirable but terrifying. Give people a warning.',
+      'Document your victories - future problems will fear your reputation.',
+    ],
+    'BN': [
+      'Your sanity is your superpower in a world of chaos',
+      'Keep asking "but why?" - the world needs your reasonable perspective',
+      'It is okay to be confused by the chaos. That means you are paying attention.',
     ],
   };
 
   const primary = topArchetypes[0];
   return recommendations[primary.name] || [
-    'Embrace your unique combination of traits',
+    'Embrace your unique combination of chaos traits',
     'Seek environments that appreciate your distinctive perspective',
-    'Continue developing self-awareness through reflection and feedback',
+    'Continue developing self-awareness through reflection (or spreadsheets, whatever works)',
   ];
 }
