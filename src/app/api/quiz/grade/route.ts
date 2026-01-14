@@ -2,17 +2,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { generateBlueprint, blueprintToResultData, type BlueprintInput } from '@/lib/blueprint';
 import type { AnswerSelection } from '@/lib/scoring';
+import { GradeRequestSchema, validateInput } from '@/lib/validation';
+import { createErrorResponse, generateRequestId, NotFoundError, ValidationError } from '@/lib/errors';
+import logger from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
-  try {
-    const { sessionId } = await request.json();
+  const requestId = generateRequestId();
+  const log = logger.child({ requestId, path: '/api/quiz/grade' });
 
-    if (!sessionId) {
+  try {
+    log.info('Grading started');
+
+    const body = await request.json();
+    const validation = validateInput(GradeRequestSchema, body);
+
+    if (!validation.success) {
+      log.warn('Validation failed', { error: validation.error });
       return NextResponse.json(
-        { error: 'Session ID is required' },
+        { error: validation.error, code: 'VALIDATION_ERROR', requestId },
         { status: 400 }
       );
     }
+
+    const { sessionId } = validation.data;
 
     const session = await prisma.quizSession.findUnique({
       where: { id: sessionId },
@@ -20,22 +32,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'Quiz session not found' },
-        { status: 404 }
-      );
+      throw new NotFoundError('Quiz session');
     }
 
     // If already graded, return existing result
     if (session.result) {
-      return NextResponse.json({ success: true, resultId: session.result.id });
+      log.info('Returning existing result', { sessionId, resultId: session.result.id });
+      return NextResponse.json({ success: true, resultId: session.result.id, requestId });
     }
 
     if (!session.answers) {
-      return NextResponse.json(
-        { error: 'No answers found for this session' },
-        { status: 400 }
-      );
+      throw new ValidationError('No answers found for this session');
     }
 
     // Convert answers from Record<string, string[]> to AnswerSelection[]
@@ -49,10 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Validate we have all 24 answers
     if (answers.length < 24) {
-      return NextResponse.json(
-        { error: `Quiz incomplete. Expected 24 questions, got ${answers.length}` },
-        { status: 400 }
-      );
+      throw new ValidationError(`Quiz incomplete. Expected 24 questions, got ${answers.length}`);
     }
 
     // Generate the blueprint
@@ -60,6 +64,8 @@ export async function POST(request: NextRequest) {
       answers,
       sessionId,
     };
+
+    log.info('Generating blueprint', { sessionId, answerCount: answers.length });
 
     const { blueprint } = generateBlueprint(blueprintInput);
 
@@ -80,16 +86,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    log.info('Grading completed', {
+      sessionId,
+      resultId: result.id,
+      primaryArchetype: result.primaryArchetypeCode,
+    });
+
     return NextResponse.json({
       success: true,
       resultId: result.id,
       publicId: session.publicId,
+      requestId,
     });
   } catch (error) {
-    console.error('Error grading quiz:', error);
-    return NextResponse.json(
-      { error: 'Failed to grade quiz', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+    log.error('Failed to grade quiz', error);
+    return createErrorResponse(error, requestId);
   }
 }

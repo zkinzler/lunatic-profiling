@@ -11,10 +11,11 @@ interface TraitBarProps {
 
 export default function TraitBar({
   trait,
-  score,
+  score: _score,
   percentage,
   showDescription = true,
 }: TraitBarProps) {
+  void _score; // Kept for API compatibility
   const traitInfo = TRAITS[trait];
 
   // Determine level and color

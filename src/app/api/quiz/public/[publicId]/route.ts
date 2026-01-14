@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { PublicIdParamSchema, validateInput } from '@/lib/validation';
+import { createErrorResponse, generateRequestId, NotFoundError } from '@/lib/errors';
+import logger from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { publicId: string } }
 ) {
+  const requestId = generateRequestId();
+  const log = logger.child({ requestId, path: '/api/quiz/public/[publicId]' });
+
   try {
-    const { publicId } = params;
+    const validation = validateInput(PublicIdParamSchema, params);
+
+    if (!validation.success) {
+      log.warn('Validation failed', { error: validation.error });
+      return NextResponse.json(
+        { error: validation.error, code: 'VALIDATION_ERROR', requestId },
+        { status: 400 }
+      );
+    }
+
+    const { publicId } = validation.data;
 
     const session = await prisma.quizSession.findUnique({
       where: { publicId },
@@ -55,18 +71,14 @@ export async function GET(
     });
 
     if (!session || !session.result) {
-      return NextResponse.json(
-        { error: 'Public result not found' },
-        { status: 404 }
-      );
+      throw new NotFoundError('Public result');
     }
 
-    return NextResponse.json(session.result);
+    log.info('Public result fetched', { publicId });
+
+    return NextResponse.json({ ...session.result, requestId });
   } catch (error) {
-    console.error('Error fetching public result:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch public result' },
-      { status: 500 }
-    );
+    log.error('Failed to fetch public result', error);
+    return createErrorResponse(error, requestId);
   }
 }

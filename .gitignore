@@ -36,3 +36,19 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# SQLite database (local development only)
+*.db
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# Sentry
+.sentryclirc
+.sentry-build-server-config.js
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

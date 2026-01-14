@@ -1,29 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { StartSessionSchema, validateInput } from '@/lib/validation';
+import { createErrorResponse, generateRequestId } from '@/lib/errors';
+import logger from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
-  try {
-    const { email } = await request.json();
+  const requestId = generateRequestId();
+  const log = logger.child({ requestId, path: '/api/user/start' });
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+  try {
+    log.info('Session creation started');
+
+    const body = await request.json();
+    const validation = validateInput(StartSessionSchema, body);
+
+    if (!validation.success) {
+      log.warn('Validation failed', { error: validation.error });
+      return NextResponse.json(
+        { error: validation.error, code: 'VALIDATION_ERROR', requestId },
+        { status: 400 }
+      );
     }
 
+    const { email } = validation.data;
+
     // Create session - questions are now fixed (24 questions in order)
-    // No need to store questionIds since they're always the same
     const session = await prisma.quizSession.create({
       data: {
         email,
-        currentPhase: 1, // Start at phase 1
+        currentPhase: 1,
       },
     });
 
-    return NextResponse.json({ sessionId: session.id });
+    log.info('Session created', { sessionId: session.id });
+
+    return NextResponse.json({ sessionId: session.id, requestId });
   } catch (error) {
-    console.error('Error creating quiz session:', error);
-    return NextResponse.json(
-      { error: 'Failed to create quiz session' },
-      { status: 500 }
-    );
+    log.error('Failed to create session', error);
+    return createErrorResponse(error, requestId);
   }
 }

@@ -5,7 +5,7 @@
  * based on quiz answers with phase multipliers and ranking weights.
  */
 
-import { ARCHETYPE_CODES, type ArchetypeCode } from './archetypes';
+import { ARCHETYPE_CODES, ARCHETYPES, type ArchetypeCode } from './archetypes';
 import { TRAIT_CODES, type TraitCode, createEmptyTraitScores, type TraitScores } from './traits';
 import { QUIZ_QUESTIONS, getQuestionById, type ThemeTag, THEME_TAGS } from './questions';
 import type { ChaosPattern } from '@/schemas/result';
@@ -481,8 +481,6 @@ export function calculatePartialScore(
  * Get top 3 archetypes for phase transition display
  */
 export function getTop3Archetypes(archetypes: ArchetypeScores): Array<{ code: ArchetypeCode; name: string; percentage: number }> {
-  const { ARCHETYPES } = require('./archetypes');
-
   return archetypes.ranked.slice(0, 3).map(a => ({
     code: a.code,
     name: ARCHETYPES[a.code].name,

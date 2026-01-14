@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import PhaseProgress from '@/components/PhaseProgress';
 import RoastDisplay from '@/components/RoastDisplay';
 import PhaseTransition from '@/components/PhaseTransition';
-import { QUIZ_QUESTIONS, type Question, isEndOfPhase } from '@/lib/questions';
+import { QUIZ_QUESTIONS, isEndOfPhase } from '@/lib/questions';
 import type { PhaseTransitionResult, ArchetypeStanding } from '@/lib/transitions';
 
 type QuizStage = 'question' | 'roast' | 'transition' | 'loading';
@@ -190,8 +190,8 @@ export default function QuizPage() {
         });
 
         if (gradeResponse.ok) {
-          const data = await gradeResponse.json();
-          router.push(`/result/${data.publicId || sessionId}`);
+          // Use sessionId for result lookup (publicId is for sharing)
+          router.push(`/result/${sessionId}`);
         } else {
           alert('Something went wrong grading your quiz. Please try again.');
           setStage('question');

@@ -7,7 +7,7 @@ import HybridBadge from '@/components/HybridBadge';
 import BlueprintSection from '@/components/BlueprintSection';
 import TraitBar from '@/components/TraitBar';
 import AsciiBlock from '@/components/AsciiBlock';
-import { TRAIT_CODES, type TraitCode } from '@/lib/traits';
+import type { TraitCode } from '@/lib/traits';
 import type { ArchetypeCode } from '@/lib/archetypes';
 
 interface BlueprintResult {

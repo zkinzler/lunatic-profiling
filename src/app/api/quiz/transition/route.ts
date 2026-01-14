@@ -6,41 +6,52 @@ import {
   type ArchetypeStanding,
 } from '@/lib/transitions';
 import type { AnswerSelection } from '@/lib/scoring';
+import { TransitionRequestSchema, validateInput } from '@/lib/validation';
+import { createErrorResponse, generateRequestId, NotFoundError, ValidationError } from '@/lib/errors';
+import logger from '@/lib/logger';
+import { z } from 'zod';
+
+// Extended schema for transition with optional phase1Standings
+// Must match ArchetypeStanding interface from transitions.ts
+const ExtendedTransitionSchema = TransitionRequestSchema.extend({
+  phase1Standings: z.array(z.object({
+    code: z.string(),
+    name: z.string(),
+    pubLegend: z.string(),
+    percentage: z.number(),
+    position: z.number(),
+    movement: z.enum(['up', 'down', 'stable']).optional(),
+  })).optional(),
+});
 
 export async function POST(request: NextRequest) {
+  const requestId = generateRequestId();
+  const log = logger.child({ requestId, path: '/api/quiz/transition' });
+
   try {
-    const { sessionId, phase, phase1Standings } = await request.json();
+    const body = await request.json();
+    const validation = validateInput(ExtendedTransitionSchema, body);
 
-    if (!sessionId || !phase) {
+    if (!validation.success) {
+      log.warn('Validation failed', { error: validation.error });
       return NextResponse.json(
-        { error: 'Session ID and phase are required' },
+        { error: validation.error, code: 'VALIDATION_ERROR', requestId },
         { status: 400 }
       );
     }
 
-    if (phase !== 1 && phase !== 2) {
-      return NextResponse.json(
-        { error: 'Phase must be 1 or 2 for transitions' },
-        { status: 400 }
-      );
-    }
+    const { sessionId, phase, phase1Standings } = validation.data;
 
     const session = await prisma.quizSession.findUnique({
       where: { id: sessionId },
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      );
+      throw new NotFoundError('Session');
     }
 
     if (!session.answers) {
-      return NextResponse.json(
-        { error: 'No answers found' },
-        { status: 400 }
-      );
+      throw new ValidationError('No answers found');
     }
 
     // Convert answers to AnswerSelection[]
@@ -63,15 +74,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    log.info('Transition generated', { sessionId, phase });
+
     return NextResponse.json({
       success: true,
       transition,
+      requestId,
     });
   } catch (error) {
-    console.error('Error generating transition:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate transition' },
-      { status: 500 }
-    );
+    log.error('Failed to generate transition', error);
+    return createErrorResponse(error, requestId);
   }
 }

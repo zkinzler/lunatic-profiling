@@ -12,7 +12,7 @@ import {
   type AnswerSelection,
   type ScoringResult,
 } from './scoring';
-import type { LunacyBlueprint, ChaosPattern } from '@/schemas/result';
+import type { LunacyBlueprint } from '@/schemas/result';
 
 // Interfaces
 export interface BlueprintInput {
@@ -190,7 +190,6 @@ function generateAsciiChart(
   lines.push('═'.repeat(35));
 
   for (const arch of rankedArchetypes) {
-    const archetype = getArchetype(arch.code);
     const barLength = Math.round((arch.percentage / 100) * maxBarLength);
     const bar = '█'.repeat(barLength) + '░'.repeat(maxBarLength - barLength);
     const label = `${arch.code}`.padEnd(4);
