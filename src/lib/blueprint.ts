@@ -13,6 +13,7 @@ import {
   type ScoringResult,
 } from './scoring';
 import type { LunacyBlueprint } from '@/schemas/result';
+import { generateAIBlueprint, isOpenAIAvailable } from './openai';
 
 // Interfaces
 export interface BlueprintInput {
@@ -388,4 +389,135 @@ export function blueprintToResultData(blueprint: LunacyBlueprint, sessionId: str
     summary: blueprint.summary,
     shareableStat: blueprint.shareableStat,
   };
+}
+
+/**
+ * Generate the full Lunacy Blueprint with AI enhancement
+ * Falls back to templates if OpenAI is unavailable or fails
+ */
+export async function generateBlueprintAsync(input: BlueprintInput): Promise<BlueprintResult & { isAIEnhanced: boolean }> {
+  const { answers } = input;
+
+  // Calculate all scores
+  const scores = calculateFullScore(answers);
+
+  // Get primary and secondary archetypes
+  const primaryCode = scores.archetypes.ranked[0].code;
+  const secondaryCode = scores.archetypes.ranked[1]?.code || null;
+
+  const primaryArchetype = {
+    code: primaryCode,
+    name: ARCHETYPES[primaryCode].name,
+    pubLegend: ARCHETYPES[primaryCode].pubLegend,
+    score: scores.archetypes.ranked[0].score,
+    percentage: scores.archetypes.ranked[0].percentage,
+  };
+
+  const secondaryArchetype = secondaryCode ? {
+    code: secondaryCode,
+    name: ARCHETYPES[secondaryCode].name,
+    pubLegend: ARCHETYPES[secondaryCode].pubLegend,
+    score: scores.archetypes.ranked[1].score,
+    percentage: scores.archetypes.ranked[1].percentage,
+  } : undefined;
+
+  // Calculate Britishness Quotient
+  const { ratio: britishnessQuotient, interpretation: britishnessInterpretation } =
+    calculateBritishnessQuotient(scores.traits.scores.BS, scores.traits.scores.AE);
+
+  // Generate ASCII chart (always template-based)
+  const asciiChart = generateAsciiChart(scores.archetypes.ranked);
+
+  // Try AI-enhanced generation first
+  let isAIEnhanced = false;
+  let coreDriver = '';
+  let superpower = '';
+  let kryptonite = '';
+  let repressedShadow = '';
+  let internalConflict = '';
+  let finalForm = '';
+  let signatureMove = '';
+  let chaosPartner = '';
+  let summary = '';
+  let shareableStat = '';
+
+  if (isOpenAIAvailable()) {
+    try {
+      const aiResult = await generateAIBlueprint(
+        scores,
+        primaryCode,
+        secondaryCode,
+        scores.hybrid.detected
+      );
+
+      if (aiResult) {
+        coreDriver = aiResult.coreDriver;
+        superpower = aiResult.superpower;
+        kryptonite = aiResult.kryptonite;
+        repressedShadow = aiResult.repressedShadow;
+        internalConflict = aiResult.internalConflict;
+        finalForm = aiResult.finalForm;
+        signatureMove = aiResult.signatureMove;
+        chaosPartner = aiResult.chaosPartner;
+        summary = aiResult.summary;
+        shareableStat = aiResult.shareableStat;
+        isAIEnhanced = true;
+      }
+    } catch (error) {
+      console.error('AI blueprint generation failed, using templates:', error);
+    }
+  }
+
+  // Fallback to templates if AI didn't work
+  if (!isAIEnhanced) {
+    coreDriver = generateCoreDriver(primaryCode);
+    superpower = generateSuperpower(scores.traits.scores);
+    kryptonite = generateKryptonite(scores.traits.scores);
+    repressedShadow = generateRepressedShadow(scores.archetypes.ranked);
+    internalConflict = generateInternalConflict(scores.traits.scores, scores.traits.maxPossible);
+    finalForm = generateFinalForm(answers);
+    signatureMove = generateSignatureMove(primaryCode);
+    chaosPartner = generateChaosPartner(primaryCode);
+    summary = generateSummary(scores, britishnessInterpretation);
+    shareableStat = generateShareableStat(scores);
+  }
+
+  // Build the blueprint
+  const blueprint: LunacyBlueprint = {
+    primaryArchetype,
+    secondaryArchetype,
+    hybridProfile: {
+      detected: scores.hybrid.detected,
+      primary: scores.hybrid.primary,
+      secondary: scores.hybrid.secondary || undefined,
+      hybridName: scores.hybrid.hybridName || undefined,
+      percentageDiff: scores.hybrid.percentageDiff || undefined,
+      description: scores.hybrid.description || undefined,
+    },
+    allArchetypeScores: scores.archetypes.scores,
+    allArchetypePercentages: scores.archetypes.percentages,
+    traitScores: scores.traits.scores,
+    traitPercentages: scores.traits.percentages,
+    themeScores: scores.themes.scores,
+    specialization: scores.themes.dominant || undefined,
+    coreDriver,
+    superpower,
+    kryptonite,
+    repressedShadow,
+    internalConflict,
+    finalForm,
+    signatureMove,
+    chaosPartner,
+    britishnessQuotient,
+    britishnessInterpretation,
+    resistanceClearanceLevel: scores.resistanceClearanceLevel as "Probationary Lunatic" | "Operative Grade II" | "Senior Chaos Agent" | "Director of Strategic Weirdness" | "Supreme Chaos Chancellor",
+    resistanceClearancePoints: scores.resistanceClearancePoints,
+    chaosPattern: scores.chaosPattern,
+    chaosPatternDescription: scores.chaosPatternDescription,
+    asciiChart,
+    summary,
+    shareableStat,
+  };
+
+  return { blueprint, rawScores: scores, isAIEnhanced };
 }

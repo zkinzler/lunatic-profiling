@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { generateBlueprint, blueprintToResultData, type BlueprintInput } from '@/lib/blueprint';
+import { generateBlueprintAsync, blueprintToResultData, type BlueprintInput } from '@/lib/blueprint';
 import type { AnswerSelection } from '@/lib/scoring';
 import { GradeRequestSchema, validateInput } from '@/lib/validation';
 import { createErrorResponse, generateRequestId, NotFoundError, ValidationError } from '@/lib/errors';
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       throw new ValidationError(`Quiz incomplete. Expected 24 questions, got ${answers.length}`);
     }
 
-    // Generate the blueprint
+    // Generate the blueprint (with AI enhancement if available)
     const blueprintInput: BlueprintInput = {
       answers,
       sessionId,
@@ -67,7 +67,9 @@ export async function POST(request: NextRequest) {
 
     log.info('Generating blueprint', { sessionId, answerCount: answers.length });
 
-    const { blueprint } = generateBlueprint(blueprintInput);
+    const { blueprint, isAIEnhanced } = await generateBlueprintAsync(blueprintInput);
+
+    log.info('Blueprint generated', { sessionId, isAIEnhanced });
 
     // Convert blueprint to database format
     const resultData = blueprintToResultData(blueprint, sessionId);
@@ -90,12 +92,14 @@ export async function POST(request: NextRequest) {
       sessionId,
       resultId: result.id,
       primaryArchetype: result.primaryArchetypeCode,
+      isAIEnhanced,
     });
 
     return NextResponse.json({
       success: true,
       resultId: result.id,
       publicId: session.publicId,
+      isAIEnhanced,
       requestId,
     });
   } catch (error) {

@@ -4,6 +4,7 @@ import { getQuestionById } from '@/lib/questions';
 import { RoastRequestSchema, validateInput } from '@/lib/validation';
 import { createErrorResponse, generateRequestId, NotFoundError } from '@/lib/errors';
 import logger from '@/lib/logger';
+import { generateAIRoast, isOpenAIAvailable } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
@@ -37,20 +38,43 @@ export async function POST(request: NextRequest) {
     // Check for special easter egg roasts first
     const specialRoast = getSpecialRoast(questionId, answerId);
 
-    // Generate the roast
-    // Convert answerHistory objects to just answerId strings for pattern detection
-    const historyIds = answerHistory?.map(h => h.answerId) || [];
-    const roast = specialRoast || generateRoast(
-      answer.roastCategory,
-      historyIds
-    );
+    let roast: string;
+    let isAIGenerated = false;
 
-    log.info('Roast generated', { questionId, answerId, isSpecial: !!specialRoast });
+    if (specialRoast) {
+      // Use special easter egg roast
+      roast = specialRoast;
+    } else if (isOpenAIAvailable()) {
+      // Try AI-generated roast first
+      const historyIds = answerHistory?.map(h => h.answerId) || [];
+      const aiRoast = await generateAIRoast(
+        question.question,
+        answer.text,
+        answer.roastCategory,
+        historyIds
+      );
+
+      if (aiRoast) {
+        roast = aiRoast;
+        isAIGenerated = true;
+        log.info('AI roast generated', { questionId, answerId });
+      } else {
+        // Fallback to template if AI fails
+        roast = generateRoast(answer.roastCategory, historyIds);
+        log.info('Fallback to template roast (AI failed)', { questionId, answerId });
+      }
+    } else {
+      // No OpenAI key, use template
+      const historyIds = answerHistory?.map(h => h.answerId) || [];
+      roast = generateRoast(answer.roastCategory, historyIds);
+      log.info('Template roast generated (no API key)', { questionId, answerId });
+    }
 
     return NextResponse.json({
       roast,
       category: answer.roastCategory,
       isSpecial: !!specialRoast,
+      isAIGenerated,
       requestId,
     });
   } catch (error) {
