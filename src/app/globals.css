@@ -219,3 +219,68 @@ h1, h2, h3 {
   background: rgba(216, 27, 96, 0.3);
   color: #ffffff;
 }
+
+/* ============================================ */
+/* The Culling - Dark Theme Styles             */
+/* ============================================ */
+
+/* Culling-specific red glow */
+@layer utilities {
+  .glow-red {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.6),
+                0 0 40px rgba(220, 38, 38, 0.4),
+                0 0 60px rgba(220, 38, 38, 0.2);
+  }
+
+  .glow-red-intense {
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.8),
+                0 0 60px rgba(220, 38, 38, 0.6),
+                0 0 90px rgba(220, 38, 38, 0.4);
+  }
+}
+
+/* Culling scan lines effect */
+.culling-scanlines {
+  position: relative;
+}
+
+.culling-scanlines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 0, 0, 0.03) 2px,
+    rgba(255, 0, 0, 0.03) 4px
+  );
+}
+
+/* Culling-specific animations */
+@keyframes culling-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+  52% { opacity: 1; }
+  54% { opacity: 0.9; }
+}
+
+@keyframes culling-glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+.animate-culling-flicker {
+  animation: culling-flicker 0.15s ease-in-out infinite;
+}
+
+.animate-culling-glitch {
+  animation: culling-glitch 0.3s ease-in-out infinite;
+}

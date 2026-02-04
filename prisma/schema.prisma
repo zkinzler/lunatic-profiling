@@ -193,3 +193,62 @@ model DailyCost {
   @@index([day])
   @@index([model, provider])
 }
+
+// ============================================
+// The Culling Quiz Models
+// ============================================
+
+model CullingSession {
+  id            String   @id @default(cuid())
+  publicId      String   @unique @default(cuid())
+  email         String?
+
+  currentPhase  String   @default("intro")  // intro, gates, main, results, email_cta
+  gateIndex     Int      @default(0)
+  questionIndex Int      @default(0)
+
+  gateAnswers   Json?    // Record<gateId, boolean>
+  mainAnswers   Json?    // Record<questionId, 'A'|'B'|'C'|'D'>
+
+  culled        Boolean  @default(false)
+  culledAtGate  Int?
+  culledReason  String?
+
+  emailCtaStage Int      @default(0)  // 0=initial, 1=first_no, 2=second_no, 3=captured
+  completed     Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  result        CullingResult?
+
+  @@index([publicId])
+  @@index([email])
+}
+
+model CullingResult {
+  id            String   @id @default(cuid())
+  sessionId     String   @unique
+
+  ghostCD       Int      @default(0)  // Surgical
+  ghostCA       Int      @default(0)  // Chaos
+  ghostOB       Int      @default(0)  // Observational
+  ghostDD       Int      @default(0)  // Deadpan
+
+  dominantGhost String?
+  isElite       Boolean  @default(false)
+
+  resultTitle       String?
+  resultDescription String?
+  comedyFingerprint String?
+  shareText         String?
+
+  emailed       Boolean  @default(false)
+  emailedAt     DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  session       CullingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
