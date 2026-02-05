@@ -11,10 +11,10 @@ export async function POST() {
     log.info('Culling session creation started');
 
     // No body validation needed - The Culling doesn't require email upfront
-    // Create a new session
+    // Create a new session - start directly in gates phase (user already typed START)
     const session = await prisma.cullingSession.create({
       data: {
-        currentPhase: 'intro',
+        currentPhase: 'gates',
         gateIndex: 0,
         questionIndex: 0,
         culled: false,
