@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         question.question,
         answer.text,
         answer.roastCategory,
-        historyIds
+        0
       );
 
       if (aiRoast) {

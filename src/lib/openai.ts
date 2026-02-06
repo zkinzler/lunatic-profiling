@@ -36,24 +36,33 @@ export function isOpenAIAvailable(): boolean {
 /**
  * System prompt for the roast generator
  */
-const ROAST_SYSTEM_PROMPT = `You are a hilariously brutal British comedy writer for "Lunatic Profiling" - a personality quiz that roasts people after every answer.
+const ROAST_SYSTEM_PROMPT = `You are a savagely funny British comedy writer for "The Culling" — a brutal personality quiz that roasts people after every answer. Think Frankie Boyle meets Jimmy Carr: dark, sharp, and unapologetically British.
 
-Your job: Write ONE short, savage roast (2-3 sentences max) based on the user's answer choice.
+Your job: Write ONE short, vicious roast (2-3 sentences max) based on the user's answer choice.
 
 Style guidelines:
-- British humor: dry, sardonic, self-deprecating observations
-- Be clever and cutting, never mean-spirited or offensive
-- Reference the specific answer they chose
-- Use creative metaphors and unexpected observations
-- Swear occasionally but cleverly (bloody, bollocks, Christ, etc.)
-- End with something that makes them laugh at themselves
+- Dark, savage British humour — Frankie Boyle / Jimmy Carr energy
+- Reference the specific answer they chose and mock their reasoning
+- UK cultural references only (Greggs, NHS, Wetherspoons, council estates, etc.)
+- Swear cleverly (bloody, bollocks, Christ, wanker, etc.) — never gratuitously
+- Make them feel personally attacked in the funniest way possible
 
 DO NOT:
 - Be genuinely hurtful or personal
 - Reference race, gender, sexuality, or religion
 - Use American slang or references
 - Write more than 3 sentences
-- Be boring or generic`;
+- Be boring, generic, or wholesome`;
+
+/**
+ * Ghost type display names for roast context
+ */
+const GHOST_NAMES: Record<string, string> = {
+  CD: 'Surgical',
+  CA: 'Chaos',
+  OB: 'Observational',
+  DD: 'Deadpan',
+};
 
 /**
  * Generate an AI roast for a quiz answer
@@ -61,16 +70,15 @@ DO NOT:
 export async function generateAIRoast(
   questionText: string,
   answerText: string,
-  category: string,
-  answerHistory: string[]
+  ghostCode: string,
+  questionNumber: number
 ): Promise<string | null> {
   const client = getOpenAIClient();
   if (!client) return null;
 
   try {
-    const historyContext = answerHistory.length > 0
-      ? `\n\nTheir previous answer patterns suggest they're ${answerHistory.length > 3 ? 'committed to chaos' : 'just getting started'}.`
-      : '';
+    const ghostName = GHOST_NAMES[ghostCode] || ghostCode;
+    const phase = questionNumber <= 5 ? 'early' : 'late';
 
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -78,13 +86,13 @@ export async function generateAIRoast(
         { role: 'system', content: ROAST_SYSTEM_PROMPT },
         {
           role: 'user',
-          content: `Question: "${questionText}"
+          content: `Question ${questionNumber}/10: "${questionText}"
 
 Their answer: "${answerText}"
 
-Answer category: ${category} (this hints at their personality type)${historyContext}
+This answer reveals a "${ghostName}" comedy ghost type (${phase} in the quiz).
 
-Write a roast for this answer:`,
+Write a savage roast for choosing this answer:`,
         },
       ],
       max_tokens: 150,

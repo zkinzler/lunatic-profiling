@@ -5,6 +5,7 @@ import logger from '@/lib/logger';
 import { CullingAnswerSchema, validateCullingInput } from '@/lib/culling/validation';
 import { getQuestionById, getGhostFromAnswer, TOTAL_QUESTIONS } from '@/lib/culling/questions';
 import { getAnswerRoast } from '@/lib/culling/roasts';
+import { generateAIRoast } from '@/lib/openai';
 import type { AnswerChoice } from '@/lib/culling/questions';
 
 export async function POST(request: NextRequest) {
@@ -88,8 +89,18 @@ export async function POST(request: NextRequest) {
       allQuestionsAnswered,
     });
 
-    // Generate roast based on question phase and ghost type
-    const roast = ghostCode ? getAnswerRoast(question.questionNumber, ghostCode) : 'Answer recorded.';
+    // Generate roast: try AI first, fall back to hardcoded
+    let roast = 'Answer recorded.';
+    if (ghostCode) {
+      const answerText = question.answers[answer];
+      const aiRoast = await generateAIRoast(
+        question.question,
+        answerText,
+        ghostCode,
+        question.questionNumber
+      );
+      roast = aiRoast || getAnswerRoast(question.questionNumber, ghostCode);
+    }
 
     return NextResponse.json({
       success: true,
