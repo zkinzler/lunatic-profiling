@@ -17,6 +17,13 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
   '/api/quiz/email': { windowMs: 60000, maxRequests: 3 }, // 3 req/min - email sending
   '/api/quiz/transition': { windowMs: 60000, maxRequests: 20 }, // 20 req/min
   '/api/quiz/save': { windowMs: 60000, maxRequests: 60 }, // 60 req/min - frequent saves
+  '/api/culling/start': { windowMs: 60000, maxRequests: 10 }, // 10 req/min - session creation
+  '/api/culling/gate': { windowMs: 60000, maxRequests: 20 }, // 20 req/min - gate answers
+  '/api/culling/answer': { windowMs: 60000, maxRequests: 15 }, // 15 req/min - triggers AI
+  '/api/culling/grade': { windowMs: 60000, maxRequests: 5 }, // 5 req/min - expensive scoring
+  '/api/culling/email': { windowMs: 60000, maxRequests: 3 }, // 3 req/min - email capture
+  '/api/culling/result': { windowMs: 60000, maxRequests: 20 }, // 20 req/min - result reads
+  '/api/culling/session': { windowMs: 60000, maxRequests: 20 }, // 20 req/min - session reads
 };
 
 // Default rate limit for other API endpoints

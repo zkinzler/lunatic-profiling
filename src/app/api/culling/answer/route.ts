@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Update answers
     const currentAnswers = (session.mainAnswers as Record<string, AnswerChoice>) || {};
+    const alreadyAnswered = questionId in currentAnswers;
     currentAnswers[questionId] = answer;
 
     // Calculate new question index
@@ -89,17 +90,21 @@ export async function POST(request: NextRequest) {
       allQuestionsAnswered,
     });
 
-    // Generate roast: try AI first, fall back to hardcoded
+    // Generate roast: skip AI if question was already answered (replay), otherwise try AI first
     let roast = 'Answer recorded.';
     if (ghostCode) {
-      const answerText = question.answers[answer];
-      const aiRoast = await generateAIRoast(
-        question.question,
-        answerText,
-        ghostCode,
-        question.questionNumber
-      );
-      roast = aiRoast || getAnswerRoast(question.questionNumber, ghostCode);
+      if (alreadyAnswered) {
+        roast = getAnswerRoast(question.questionNumber, ghostCode);
+      } else {
+        const answerText = question.answers[answer];
+        const aiRoast = await generateAIRoast(
+          question.question,
+          answerText,
+          ghostCode,
+          question.questionNumber
+        );
+        roast = aiRoast || getAnswerRoast(question.questionNumber, ghostCode);
+      }
     }
 
     return NextResponse.json({
