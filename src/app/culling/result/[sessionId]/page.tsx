@@ -157,13 +157,9 @@ export default function CullingResultPage() {
   return (
     <CullingResult
       isElite={result.isElite}
-      dominantGhost={result.dominantGhost}
       dominantGhostDetails={result.dominantGhostDetails}
-      scores={result.scores}
-      percentages={result.percentages}
       resultTitle={result.resultTitle}
       resultDescription={result.resultDescription}
-      comedyFingerprint={result.comedyFingerprint}
       shareText={result.shareText}
       finalRoast={result.finalRoast}
       publicId={result.publicId}

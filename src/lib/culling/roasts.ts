@@ -8,20 +8,68 @@ export type RoastPhase = 'gate_pass' | 'gate_fail' | 'answer_phase1' | 'answer_p
 
 // Phase 1 Answer Roasts (Q1-5): Based on ghost type from answer
 // A=DD, B=CA, C=OB, D=CD
-const PHASE1_ANSWER_ROASTS: Record<GhostCode, string> = {
-  DD: "Your emotional range makes a dial-up modem seem expressive.",
-  CA: "You'd burn down an orphanage to see what colour the smoke is.",
-  OB: "You notice everything. And hate everything you notice.",
-  CD: "You'd perform surgery without anaesthetic and charge for the privilege.",
+const PHASE1_ANSWER_ROASTS: Record<GhostCode, string[]> = {
+  DD: [
+    "Your emotional range makes a dial-up modem seem expressive.",
+    "You answered that with the warmth of a Greggs sausage roll left on a park bench since Tuesday.",
+    "Somewhere a therapist just felt a chill and doesn't know why.",
+    "You could read someone their terminal diagnosis and they'd think you were ordering a takeaway.",
+    "That answer had the emotional depth of a puddle in a Lidl car park.",
+  ],
+  CA: [
+    "You'd burn down an orphanage to see what colour the smoke is.",
+    "Your brain doesn't connect dots — it sets fire to the paper and watches what shape the ash makes.",
+    "That's the kind of answer that gets you banned from a pub quiz and invited to a better one.",
+    "You chose violence and somehow made it entertaining. Worrying.",
+    "Chaotic. Unhinged. Strangely compelling. Like a fox in a Tesco Express.",
+  ],
+  OB: [
+    "You notice everything. And hate everything you notice.",
+    "You've got the observational skills of a CCTV camera with depression.",
+    "That answer says you've spent years watching people fail and taking detailed notes.",
+    "You see the world clearly, and it's clearly shit. Fair enough.",
+    "Wearily accurate. Like a weather forecast that only predicts rain because it's Britain.",
+  ],
+  CD: [
+    "You'd perform surgery without anaesthetic and charge for the privilege.",
+    "That answer was so precise it should come with a scalpel and a written apology.",
+    "Clinical. Devastating. The kind of answer that ruins Christmas dinners with surgical efficiency.",
+    "You don't tell jokes — you perform autopsies on people's self-esteem.",
+    "That landed like a perfectly aimed dart at someone who thought they were safe.",
+  ],
 };
 
 // Phase 2 Answer Roasts (Q6-10): Based on ghost type from answer
 // A=CD, B=CA, C=OB, D=DD
-const PHASE2_ANSWER_ROASTS: Record<GhostCode, string> = {
-  CD: "Precise cruelty. You could dissect a butterfly and make it feel ashamed.",
-  CA: "Beautiful, stupid chaos. The human equivalent of a firework in a library.",
-  OB: "Weary accuracy. You see the cliff edge and just sigh.",
-  DD: "Terminal logic. You'd calculate the exact moment to stop caring.",
+const PHASE2_ANSWER_ROASTS: Record<GhostCode, string[]> = {
+  CD: [
+    "Precise cruelty. You could dissect a butterfly and make it feel ashamed.",
+    "You're doubling down on the precision. At this point you're not funny, you're a weapon.",
+    "Another surgical strike. You're basically a Predator drone with a comedy degree.",
+    "The consistency is terrifying. You've found the jugular and you keep going back to it.",
+    "You treat conversation like open-heart surgery — except you enjoy it more.",
+  ],
+  CA: [
+    "Beautiful, stupid chaos. The human equivalent of a firework in a library.",
+    "You're committed to the chaos now. There's no coming back from this. Godspeed.",
+    "That answer had the structural integrity of a Jenga tower in an earthquake.",
+    "You're the person who flips the Monopoly board and somehow everyone has a better time.",
+    "Unhinged in a way that suggests you peaked during a fire alarm at school.",
+  ],
+  OB: [
+    "Weary accuracy. You see the cliff edge and just sigh.",
+    "You keep pointing out the obvious truths nobody wants to hear. Very British of you.",
+    "Another observation that makes everyone uncomfortable. You're like a mirror nobody asked for.",
+    "You've got the comedy instincts of someone who's read every TripAdvisor review of their own life.",
+    "Brutally perceptive. The kind of mate who ruins films by predicting every twist correctly.",
+  ],
+  DD: [
+    "Terminal logic. You'd calculate the exact moment to stop caring.",
+    "You're so deadpan the pan itself is filing a restraining order.",
+    "Another flat delivery. You make a speak-your-weight machine sound animated.",
+    "Emotionally arid. The Sahara called — it wants to know your secret.",
+    "You answer questions like you're filling in a tax return. And somehow it's devastating.",
+  ],
 };
 
 // Final elite roasts by ghost type (4% Elite)
@@ -109,10 +157,8 @@ const FINAL_CULLED_DESCRIPTIONS: Record<GhostCode, {
  * Get an answer roast based on question number and ghost type
  */
 export function getAnswerRoast(questionNumber: number, ghostCode: GhostCode): string {
-  if (questionNumber <= 5) {
-    return PHASE1_ANSWER_ROASTS[ghostCode];
-  }
-  return PHASE2_ANSWER_ROASTS[ghostCode];
+  const roasts = questionNumber <= 5 ? PHASE1_ANSWER_ROASTS[ghostCode] : PHASE2_ANSWER_ROASTS[ghostCode];
+  return roasts[Math.floor(Math.random() * roasts.length)];
 }
 
 /**

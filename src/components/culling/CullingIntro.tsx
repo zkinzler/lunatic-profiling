@@ -86,7 +86,7 @@ export default function CullingIntro({ onStart, isLoading }: CullingIntroProps) 
         {/* Input prompt */}
         <div className="text-center">
           <p className="text-yellow-500 font-mono mb-4">
-            Type START if you think your sense of humour can survive this
+            Type START or click below — if you dare
           </p>
         </div>
 
@@ -130,6 +130,15 @@ export default function CullingIntro({ onStart, isLoading }: CullingIntroProps) 
             </p>
           )}
         </form>
+
+        {/* Click to start button */}
+        <button
+          onClick={onStart}
+          disabled={isLoading}
+          className="w-full py-4 border-2 border-red-600 bg-transparent text-red-500 font-mono font-bold uppercase tracking-widest rounded-lg hover:bg-red-600 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Initializing protocol...' : '[ START THE CULLING ]'}
+        </button>
 
         {/* Footer */}
         <p className="text-center text-gray-600 text-xs font-mono">

@@ -1,20 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import GhostTypeBar from './GhostTypeBar';
 import EmailCTA from './EmailCTA';
-import type { GhostCode, GhostType } from '@/lib/culling/ghosts';
+import type { GhostType } from '@/lib/culling/ghosts';
 import type { EmailCtaContent } from '@/lib/culling/email-cta';
 
 interface CullingResultProps {
   isElite: boolean;
-  dominantGhost: GhostCode | null;
   dominantGhostDetails: GhostType | null;
-  scores: Record<GhostCode, number>;
-  percentages: Record<GhostCode, number>;
   resultTitle: string;
   resultDescription: string;
-  comedyFingerprint: string;
   shareText: string;
   finalRoast: string | null;
   publicId: string;
@@ -27,13 +22,9 @@ interface CullingResultProps {
 
 export default function CullingResult({
   isElite,
-  dominantGhost,
   dominantGhostDetails,
-  scores,
-  percentages,
   resultTitle,
   resultDescription,
-  comedyFingerprint,
   shareText,
   finalRoast,
   publicId,
@@ -75,8 +66,6 @@ export default function CullingResult({
       alert('Copied to clipboard!');
     }
   };
-
-  const GHOST_CODES: GhostCode[] = ['CD', 'CA', 'OB', 'DD'];
 
   return (
     <div className="min-h-screen bg-black py-8 px-4">
@@ -165,41 +154,12 @@ export default function CullingResult({
           </div>
         )}
 
-        {/* Score breakdown */}
-        <div
-          className={`space-y-4 transition-all duration-700 delay-500 ${
-            showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <h3 className="text-lg font-bold text-white">Ghost Classification Breakdown</h3>
-          {GHOST_CODES.map((code) => (
-            <GhostTypeBar
-              key={code}
-              code={code}
-              name={code}
-              score={scores[code]}
-              percentage={percentages[code]}
-              isDominant={code === dominantGhost}
-            />
-          ))}
-        </div>
-
-        {/* Comedy fingerprint */}
-        <div
-          className={`bg-gray-950 border border-gray-800 rounded-lg p-6 transition-all duration-700 delay-700 ${
-            showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <h3 className="text-sm font-mono text-gray-500 mb-2">COMEDY FINGERPRINT</h3>
-          <p className="text-lg font-mono text-white break-all">{comedyFingerprint}</p>
-        </div>
-
         {/* Final roast */}
         {finalRoast && (
           <div
             className={`bg-gradient-to-br ${
               isElite ? 'from-purple-950/50 to-pink-950/50 border-purple-500/30' : 'from-red-950/50 to-gray-950 border-red-500/30'
-            } border rounded-lg p-6 transition-all duration-700 delay-[900ms] ${
+            } border rounded-lg p-6 transition-all duration-700 delay-500 ${
               showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
@@ -211,7 +171,7 @@ export default function CullingResult({
         {/* Email CTA */}
         {emailCtaStage < 3 && !emailDismissed && (
           <div
-            className={`transition-all duration-700 delay-[1100ms] ${
+            className={`transition-all duration-700 delay-700 ${
               showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
@@ -226,7 +186,7 @@ export default function CullingResult({
         {/* Email captured confirmation */}
         {emailCtaStage === 3 && (
           <div
-            className={`transition-all duration-700 delay-[1100ms] ${
+            className={`transition-all duration-700 delay-700 ${
               showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
@@ -240,7 +200,7 @@ export default function CullingResult({
 
         {/* Share button */}
         <div
-          className={`space-y-3 transition-all duration-700 delay-[1300ms] ${
+          className={`space-y-3 transition-all duration-700 delay-[900ms] ${
             showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >

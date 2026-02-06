@@ -102,17 +102,6 @@ export default async function SharePage({ params }: PageProps) {
   const dominantGhost = result.dominantGhost as GhostCode | null;
   const ghostDetails = dominantGhost ? GHOST_TYPES[dominantGhost] : null;
 
-  // Calculate percentages
-  const totalScore = result.ghostCD + result.ghostCA + result.ghostOB + result.ghostDD;
-  const percentages = totalScore > 0
-    ? {
-        CD: Math.round((result.ghostCD / totalScore) * 100),
-        CA: Math.round((result.ghostCA / totalScore) * 100),
-        OB: Math.round((result.ghostOB / totalScore) * 100),
-        DD: Math.round((result.ghostDD / totalScore) * 100),
-      }
-    : { CD: 0, CA: 0, OB: 0, DD: 0 };
-
   return (
     <div className="min-h-screen bg-black py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -187,46 +176,6 @@ export default async function SharePage({ params }: PageProps) {
             </div>
           </div>
         )}
-
-        {/* Score breakdown */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-bold text-white">Ghost Classification</h3>
-          {(['CD', 'CA', 'OB', 'DD'] as GhostCode[]).map((code) => {
-            const ghost = GHOST_TYPES[code];
-            const score = code === 'CD' ? result.ghostCD :
-                         code === 'CA' ? result.ghostCA :
-                         code === 'OB' ? result.ghostOB : result.ghostDD;
-            const percentage = percentages[code];
-            const isDominant = code === dominantGhost;
-
-            return (
-              <div
-                key={code}
-                className={`p-4 rounded-lg border ${
-                  isDominant ? 'border-white/30 bg-white/5' : 'border-gray-800 bg-gray-900/50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-white">{ghost.name}</span>
-                    {isDominant && (
-                      <span className="px-2 py-0.5 bg-white/10 rounded text-xs text-white font-mono">
-                        DOMINANT
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-mono text-gray-400">{score}/10</span>
-                </div>
-                <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-600 to-pink-600"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
 
         {/* CTA */}
         <div className="space-y-4 pt-4">
