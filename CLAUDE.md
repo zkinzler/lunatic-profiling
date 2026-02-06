@@ -1,5 +1,8 @@
 # Claude Project Notes - The Culling
 
+## Current Status: COMPLETE & LIVE ✅
+Last updated: Feb 6, 2026 - All features working, deployed to Vercel.
+
 ## What This Project Is
 **The Culling** is a UK comedy personality quiz that determines users' "comedic ghost type" through brutal, Frankie Boyle-style humour. It's hosted at https://lunatic-profiling.vercel.app
 
